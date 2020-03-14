@@ -120,14 +120,14 @@ export class DepartmentUpdateComponent implements OnInit {
    * display and list values. Maps `{streetAddress: "band", id:"id" }` into a string
    */
   resultFormatBandListValue(value: any): any {
-    return value.streetAddress;
+    return value.streetAddress + ' - ' + value.postalCode + ' - ' + value.city;
   }
   /**
    * Initially binds the string value and then after selecting
    * an item by checking either for string or key/value object.
    */
   inputFormatBandListValue(value: any): any {
-    if (value.id) return value.id;
+    if (value.streetAddress) return value.streetAddress;
     return value;
   }
 
