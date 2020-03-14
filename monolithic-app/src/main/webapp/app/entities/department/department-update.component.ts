@@ -3,8 +3,8 @@ import { HttpResponse } from '@angular/common/http';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, debounceTime, distinctUntilChanged, switchMap, catchError, tap } from 'rxjs/operators';
 
 import { IDepartment, Department } from 'app/shared/model/department.model';
 import { DepartmentService } from './department.service';
@@ -18,10 +18,14 @@ import { LocationService } from 'app/entities/location/location.service';
 export class DepartmentUpdateComponent implements OnInit {
   isSaving = false;
   locations: ILocation[] = [];
+  locationName: null;
+  searching = false;
+  searchFailed = false;
 
   editForm = this.fb.group({
     id: [],
     departmentName: [null, [Validators.required]],
+    locationName: [],
     location: []
   });
 
@@ -110,4 +114,44 @@ export class DepartmentUpdateComponent implements OnInit {
   trackById(index: number, item: ILocation): any {
     return item.id;
   }
+
+  /**
+   * Used to format the result data from the lookup into the
+   * display and list values. Maps `{streetAddress: "band", id:"id" }` into a string
+   */
+  resultFormatBandListValue(value: any): any {
+    return value.streetAddress;
+  }
+  /**
+   * Initially binds the string value and then after selecting
+   * an item by checking either for string or key/value object.
+   */
+  inputFormatBandListValue(value: any): any {
+    if (value.id) return value.id;
+    return value;
+  }
+
+  getLocations(searchTerm: string): Observable<ILocation[]> {
+    return this.locationService.query({ filter: 'department-is-null' }).pipe(
+      map((res: HttpResponse<ILocation[]>) => {
+        return res.body || [];
+      })
+    );
+  }
+  search = (text$: Observable<string>) =>
+    text$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      tap(() => (this.searching = true)),
+      switchMap(term =>
+        this.getLocations(term).pipe(
+          tap(() => (this.searchFailed = false)),
+          catchError(() => {
+            this.searchFailed = true;
+            return of([]);
+          })
+        )
+      ),
+      tap(() => (this.searching = false))
+    );
 }

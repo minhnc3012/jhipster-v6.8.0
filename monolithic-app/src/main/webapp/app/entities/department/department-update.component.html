@@ -1,7 +1,7 @@
 <div class="row justify-content-center">
     <div class="col-8">
         <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-            <h2 id="jhi-department-heading" jhiTranslate="monolithicappApp.department.home.createOrEditLabel">Create or edit a Department</h2>
+            <h2 id="jhi-department-heading" jhiTranslate="demoApp.department.home.createOrEditLabel">Create or edit a Department</h2>
 
             <div>
                 <jhi-alert-error></jhi-alert-error>
@@ -12,7 +12,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="monolithicappApp.department.departmentName" for="field_departmentName">Department Name</label>
+                    <label class="form-control-label" jhiTranslate="demoApp.department.departmentName" for="field_departmentName">Department Name</label>
                     <input type="text" class="form-control" name="departmentName" id="field_departmentName"
                            formControlName="departmentName"/>
                     <div *ngIf="editForm.get('departmentName')!.invalid && (editForm.get('departmentName')!.dirty || editForm.get('departmentName')!.touched)">
@@ -24,14 +24,29 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-control-label" jhiTranslate="monolithicappApp.department.location" for="field_location">Location</label>
+                    <label class="form-control-label" jhiTranslate="demoApp.department.location" for="field_location">Location</label>
                     <select class="form-control" id="field_location" name="location" formControlName="location">
                         <option [ngValue]="null"></option>
                         <option [ngValue]="locationOption.id === editForm.get('location')!.value?.id ? editForm.get('location')!.value : locationOption" *ngFor="let locationOption of locations; trackBy: trackById">{{ locationOption.id }}</option>
                     </select>
                 </div>
+                
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="demoApp.department.location" for="field_location">Location</label>
+                    <input id="locationName" name="locationName" formControlName="locationName" type="text"  class="form-control"                     
+                    [class.is-invalid]="searchFailed" 
+                    [(ngModel)]="locationName"
+                     [ngbTypeahead]="search"
+                     [inputFormatter]="inputFormatBandListValue" 
+                     [resultFormatter]="resultFormatBandListValue"                     
+                     #instance="ngbTypeahead"                     
+                     />
+                    <small *ngIf="searching" class="form-text text-muted">searching...</small>
+                    <div class="invalid-feedback" *ngIf="searchFailed">Sorry, suggestions could not be loaded.</div>
+                </div>
             </div>
-
+            <hr>
+            <pre>Selected: {{ locationName | json }}</pre>
             <div>
                 <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
                     <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
